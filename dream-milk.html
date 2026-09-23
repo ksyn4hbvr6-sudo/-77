@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#f3d7e0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Milk">
+<title>Milk · 梦境字卡</title>
+<style>
+/* SECTION: base */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg1:#f7e3ec; --bg2:#e3d5f5; --accent:#c96f9b; --accent2:#8f6fc9;
+  --ink:#4a3550; --ink2:#8b7a95; --card:rgba(255,255,255,.72);
+  --bme:#c96f9b; --boshi:rgba(255,255,255,.9);
+  --r:18px; --fs:16px;
+  --shadow:0 8px 30px rgba(90,50,110,.12);
+}
+html,body{height:100%}
+body{
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  font-size:var(--fs); color:var(--ink); line-height:1.6;
+  background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 100%);
+  background-attachment:fixed; overflow:hidden;
+}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(2px 2px at 12% 18%,rgba(255,255,255,.9),transparent),
+  radial-gradient(1.5px 1.5px at 78% 12%,rgba(255,255,255,.8),transparent),
+  radial-gradient(2px 2px at 62% 42%,rgba(255,255,255,.7),transparent),
+  radial-gradient(1.5px 1.5px at 30% 66%,rgba(255,255,255,.8),transparent),
+  radial-gradient(2px 2px at 88% 74%,rgba(255,255,255,.6),transparent);}
+button{font:inherit;color:inherit;border:none;background:none;cursor:pointer}
+input,textarea,select{font:inherit;color:var(--ink)}
+textarea{resize:none}
+.hidden{display:none!important}
+/* SECTION: shell */
+#shell{position:relative;z-index:1;display:flex;flex-direction:column;height:100dvh;max-width:520px;margin:0 auto}
+#topbar{flex:0 0 auto;padding:calc(10px + env(safe-area-inset-top)) 16px 8px;display:flex;align-items:center;justify-content:space-between}
+#topbar h1{font-size:1.05rem;letter-spacing:.06em;font-weight:600}
+#topbar h1 small{display:block;font-size:.68rem;font-weight:400;color:var(--ink2);letter-spacing:.14em}
+.top-actions{display:flex;gap:8px}
+.icon-btn{width:38px;height:38px;border-radius:50%;background:var(--card);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;font-size:1.05rem;box-shadow:var(--shadow)}
+#main{flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:4px 14px 16px}
+.tab-panel{display:none;animation:fadein .25s ease}
+.tab-panel.active{display:block}
+#panel-chat.active{display:flex;flex-direction:column;height:calc(100dvh - 132px)}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* SECTION: tabbar */
+#tabbar{flex:0 0 auto;display:flex;background:rgba(255,255,255,.75);backdrop-filter:blur(14px);
+  border-top:1px solid rgba(255,255,255,.7);padding-bottom:env(safe-area-inset-bottom)}
+.tab-btn{flex:1;padding:8px 0 6px;text-align:center;color:var(--ink2);font-size:.72rem;position:relative}
+.tab-btn .ti{display:block;font-size:1.25rem;line-height:1.3;filter:grayscale(.5);transition:.2s}
+.tab-btn.on{color:var(--accent);font-weight:600}
+.tab-btn.on .ti{filter:none;transform:translateY(-2px) scale(1.08)}
+/* SECTION: cards & common */
+.glass{background:var(--card);backdrop-filter:blur(10px);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;margin-bottom:14px;border:1px solid rgba(255,255,255,.6)}
+.glass h3{font-size:.9rem;color:var(--accent);margin-bottom:8px;letter-spacing:.05em}
+.hint{font-size:.76rem;color:var(--ink2);line-height:1.7}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(120deg,var(--accent),var(--accent2));
+  color:#fff;border-radius:999px;padding:10px 20px;font-size:.88rem;box-shadow:0 6px 16px rgba(160,90,160,.35);transition:.15s}
+.btn:active{transform:scale(.96)}
+.btn.ghost{background:var(--card);color:var(--accent);box-shadow:none;border:1px solid rgba(180,120,180,.35)}
+.btn.small{padding:6px 14px;font-size:.78rem}
+.btn.danger{background:linear-gradient(120deg,#c96f6f,#c94f8f)}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:.78rem;color:var(--ink2);margin-bottom:4px}
+.field input[type=text],.field input[type=number],.field input[type=date],.field input[type=password],.field select,.field textarea{
+  width:100%;background:rgba(255,255,255,.85);border:1px solid rgba(180,140,190,.3);border-radius:12px;padding:10px 12px;outline:none}
+.field input:focus,.field textarea:focus{border-color:var(--accent)}
+.chip{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.75);border:1px solid rgba(180,140,190,.3);
+  border-radius:999px;padding:5px 12px;font-size:.78rem;margin:3px 4px 3px 0}
+.chip.on{background:linear-gradient(120deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.empty{padding:26px 10px;text-align:center;color:var(--ink2);font-size:.82rem}
+.sec-title{font-size:.8rem;color:var(--ink2);letter-spacing:.15em;margin:18px 2px 8px;display:flex;align-items:center;gap:8px}
+.sec-title::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(180,120,180,.35),transparent)}
+/* SECTION: chat */
+.chat-head{display:flex;align-items:center;gap:10px;padding:6px 2px 10px}
+.avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(140deg,#fff,var(--bg2));display:flex;
+  align-items:center;justify-content:center;font-size:1.35rem;box-shadow:var(--shadow);flex:0 0 auto}
+.chat-head .meta{flex:1;min-width:0}
+.chat-head .meta b{font-size:.95rem}
+.chat-head .meta span{display:block;font-size:.7rem;color:#5faf7f}
+.chat-head .meta span::before{content:"● ";font-size:.55rem}
+#chat-list{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:2px 2px 10px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:78%;padding:9px 14px;border-radius:16px;font-size:.88rem;line-height:1.55;word-break:break-word;animation:pop .18s ease;white-space:pre-wrap}
+@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
+.msg.oshi{align-self:flex-start;background:var(--boshi);border-bottom-left-radius:4px;box-shadow:var(--shadow)}
+.msg.me{align-self:flex-end;background:linear-gradient(120deg,var(--bme),var(--accent2));color:#fff;border-bottom-right-radius:4px}
+.msg .m-ava{display:inline-block;font-size:.85rem;margin-right:4px}
+.msg-time{align-self:center;font-size:.66rem;color:var(--ink2);margin:4px 0}
+.typing{align-self:flex-start;background:var(--boshi);border-radius:16px;border-bottom-left-radius:4px;padding:12px 16px;display:flex;gap:5px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--accent);opacity:.5;animation:blink 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:.9;transform:translateY(-3px)}}
+.chat-sys{text-align:center;font-size:.72rem;color:var(--ink2);padding:6px 10px}
+#chat-input-bar{flex:0 0 auto;display:flex;gap:8px;padding:8px 2px calc(10px + env(safe-area-inset-bottom) )}
+#chat-input{flex:1;background:rgba(255,255,255,.88);border:1px solid rgba(180,140,190,.3);border-radius:999px;padding:10px 16px;outline:none}
+/* SECTION: diary */
+.day-card .dc-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.day-card .dc-date{font-size:.85rem;font-weight:600;color:var(--accent)}
+.day-card .dc-mood{font-size:.72rem;color:#fff;padding:2px 10px;border-radius:999px}
+.day-card .dc-w{font-size:.78rem;color:var(--ink2);margin-bottom:4px}
+.day-card .dc-note{font-size:.86rem;white-space:pre-wrap}
+.day-card .dc-oshi{margin-top:8px;padding:8px 12px;background:rgba(255,255,255,.55);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;font-size:.8rem;color:var(--ink2)}
+.day-card .dc-ops{margin-top:8px;text-align:right}
+.day-card .dc-ops button{font-size:.72rem;color:var(--ink2);margin-left:12px}
+.mood-dot{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:6px}
+.mood-pick .chip.sel{outline:2px solid var(--accent)}
+/* SECTION: cards */
+.lyric-card{position:relative;padding:18px 16px;margin-bottom:14px;border-radius:var(--r);
+  background:linear-gradient(150deg,rgba(255,255,255,.85),rgba(255,255,255,.55));box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.7)}
+.lyric-card .lc-t{font-size:.82rem;color:var(--accent);font-weight:600;letter-spacing:.05em}
+.lyric-card .lc-l{font-size:.92rem;margin-top:6px;font-style:italic;color:var(--ink)}
+.lyric-card .lc-ops{position:absolute;top:14px;right:12px;display:flex;gap:10px;font-size:.95rem}
+.lyric-card.fav{border:1.5px solid var(--accent)}
+.env-card{text-align:center;padding:30px 18px}
+.env-card .env{font-size:3.2rem;display:inline-block;animation:sway 3s ease-in-out infinite;cursor:pointer}
+@keyframes sway{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+.reveal-card{margin-top:14px;padding:20px;border-radius:var(--r);background:linear-gradient(140deg,var(--accent),var(--accent2));color:#fff;animation:flip .5s ease}
+@keyframes flip{from{transform:rotateY(90deg);opacity:0}to{transform:none;opacity:1}}
+/* SECTION: news / announce */
+.good-morning{text-align:center;padding:22px 16px}
+.good-morning .gm-title{font-size:1.25rem;letter-spacing:.3em;color:var(--accent);font-weight:700}
+.good-morning .gm-sub{font-size:.74rem;color:var(--ink2);letter-spacing:.2em;margin:4px 0 14px}
+.gm-row{display:flex;justify-content:space-around;text-align:center;margin:8px 0}
+.gm-row .cell b{display:block;font-size:.95rem}
+.gm-row .cell span{font-size:.7rem;color:var(--ink2)}
+.counter-card{text-align:center;padding:26px 16px}
+.counter-card .num{font-size:3rem;font-weight:700;background:linear-gradient(120deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.2}
+.counter-card .cap{font-size:.8rem;color:var(--ink2)}
+.anni-item{display:flex;justify-content:space-between;align-items:center;padding:10px 2px;border-bottom:1px dashed rgba(180,140,190,.25);font-size:.86rem}
+.anni-item:last-child{border:none}
+.anni-item .d{color:var(--accent);font-weight:600;font-size:.8rem}
+/* SECTION: me / settings rows */
+.row-item{display:flex;align-items:center;justify-content:space-between;padding:13px 2px;border-bottom:1px solid rgba(180,140,190,.15);font-size:.88rem}
+.row-item:last-child{border:none}
+.row-item .r-ico{margin-right:10px}
+.row-item .r-arrow{color:var(--ink2)}
+.switch{width:44px;height:26px;border-radius:999px;background:rgba(150,130,160,.3);position:relative;transition:.2s;flex:0 0 auto}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.switch.on{background:var(--accent)}
+.switch.on::after{left:21px}
+.store-state{display:flex;gap:10px;margin:10px 0}
+.store-pill{flex:1;text-align:center;font-size:.74rem;padding:10px 4px;border-radius:12px;background:rgba(255,255,255,.6)}
+.store-pill.ok{color:#3f8f5f}.store-pill.bad{color:#c05f5f}
+.theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.theme-grid .t-item{padding:10px 12px;border-radius:12px;font-size:.78rem;border:1.5px solid rgba(180,140,190,.3);text-align:center}
+.theme-grid .t-item.on{border-color:var(--accent);box-shadow:var(--shadow)}
+.color-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px dashed rgba(180,140,190,.2)}
+.color-row label{font-size:.82rem}
+.color-row input[type=color]{width:44px;height:30px;border:none;background:none;border-radius:8px;padding:0}
+.guide-step{display:flex;gap:12px;margin-bottom:12px}
+.guide-step .g-n{flex:0 0 auto;width:26px;height:26px;border-radius:50%;background:linear-gradient(120deg,var(--accent),var(--accent2));color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem}
+.guide-step p{font-size:.84rem;padding-top:2px}
+kbd{background:rgba(255,255,255,.9);border:1px solid rgba(180,140,190,.4);border-radius:6px;padding:1px 7px;font-size:.78rem}
+/* SECTION: lock & onboarding & modal & toast */
+#lock-screen,#ob-screen{position:fixed;inset:0;z-index:60;background:linear-gradient(160deg,var(--bg1),var(--bg2));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 24px;text-align:center}
+#ob-screen .ob-body{width:100%;max-width:400px}
+.ob-title{font-size:1.5rem;letter-spacing:.1em;margin-bottom:6px;font-weight:700}
+.ob-title.script{font-family:Georgia,"Times New Roman",serif;font-style:italic}
+.ob-sub{font-size:.8rem;color:var(--ink2);margin-bottom:22px}
+.ob-card{background:var(--card);border-radius:var(--r);padding:20px;box-shadow:var(--shadow);text-align:left;margin-bottom:16px}
+.copy-line{background:rgba(255,255,255,.85);border-radius:12px;padding:12px 14px;font-size:.86rem;text-align:center;margin-bottom:10px;border:1px dashed var(--accent)}
+#lock-screen .lock-ava{font-size:3rem;margin-bottom:12px}
+#lock-screen input{width:180px;text-align:center;letter-spacing:.6em;font-size:1.1rem;background:rgba(255,255,255,.85);
+  border:1px solid rgba(180,140,190,.4);border-radius:14px;padding:10px;outline:none}
+#modal-root{position:fixed;inset:0;z-index:70;background:rgba(60,35,70,.45);backdrop-filter:blur(3px);
+  display:flex;align-items:flex-end;justify-content:center}
+#modal-root .sheet{width:100%;max-width:520px;background:linear-gradient(170deg,#fff 60%,var(--bg1));
+  border-radius:24px 24px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));max-height:82dvh;overflow-y:auto;animation:up .25s ease}
+@keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sheet-head b{font-size:.95rem}
+#toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:80;
+  background:rgba(60,35,70,.85);color:#fff;font-size:.8rem;padding:9px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;max-width:80vw;text-align:center}
+#toast.show{opacity:1}
+/* SECTION: call overlay */
+#call-screen{position:fixed;inset:0;z-index:65;display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:calc(60px + env(safe-area-inset-top)) 24px calc(50px + env(safe-area-inset-bottom));text-align:center;
+  background:radial-gradient(120% 90% at 50% 20%,#3a2450,#171021)}
+#call-screen .c-ava{width:96px;height:96px;border-radius:50%;background:linear-gradient(140deg,#e8b7d0,#9d7bc9);
+  display:flex;align-items:center;justify-content:center;font-size:2.6rem;animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(230,180,220,.35)}50%{box-shadow:0 0 0 26px rgba(230,180,220,0)}}
+#call-screen .c-title{color:#fff;font-size:1.1rem;margin-top:16px}
+#call-screen .c-sub{color:rgba(255,255,255,.6);font-size:.78rem;margin-top:6px;white-space:pre-wrap;font-style:italic}
+#call-screen .c-timer{color:rgba(255,255,255,.85);font-size:1rem;letter-spacing:.1em;margin-top:10px}
+#call-screen .c-ops{display:flex;gap:60px}
+.c-btn{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:#fff}
+.c-btn.accept{background:#4fbf6e}.c-btn.decline{background:#e05f5f}.c-btn.end{background:#e05f5f;width:70px;height:70px}
+#call-screen .c-note{color:rgba(255,255,255,.4);font-size:.66rem}
+/* SECTION: responsive desktop */
+@media(min-width:560px){
+  #shell{border-left:1px solid rgba(255,255,255,.5);border-right:1px solid rgba(255,255,255,.5)}
+  body{background-size:cover}
+}
+@media(max-width:360px){:root{--fs:14.5px}}
+</style>
+</head>
+<body>
+
+<!-- SECTION: lock screen -->
+<div id="lock-screen" class="hidden">
+  <div class="lock-ava" id="lock-ava">🫖</div>
+  <div class="ob-title script">Milk</div>
+  <div class="ob-sub">输入四位数字密码解锁</div>
+  <input id="lock-input" type="password" inputmode="numeric" maxlength="4" autocomplete="off">
+  <div class="btn-row" style="justify-content:center"><button class="btn" id="lock-go">解锁</button></div>
+  <p class="hint" id="lock-err" style="color:#c05f5f;margin-top:10px"></p>
+</div>
+
+<!-- SECTION: onboarding -->
+<div id="ob-screen" class="hidden">
+  <div class="ob-body" id="ob-body"></div>
+</div>
+
+<!-- SECTION: main shell -->
+<div id="shell">
+  <header id="topbar">
+    <h1 id="page-title">𝓜𝓲𝓻𝓪𝓬𝓵𝓮<small id="page-sub">你就是奇迹本身</small></h1>
+    <div class="top-actions">
+      <button class="icon-btn" id="btn-call" title="视频通话" aria-label="发起视频通话">📹</button>
+      <button class="icon-btn" id="btn-top-setting" title="设置">⚙️</button>
+    </div>
+  </header>
+  <main id="main">
+    <!-- SECTION: panel chat -->
+    <section class="tab-panel active" id="panel-chat">
+      <div class="chat-head">
+        <div class="avatar" id="oshi-avatar">🫖</div>
+        <div class="meta"><b id="oshi-name">梦角</b><span>在线</span></div>
+        <button class="btn small ghost" id="btn-oshi-settings">TA的设置</button>
+      </div>
+      <div id="chat-list"></div>
+      <div id="chat-input-bar">
+        <input id="chat-input" type="text" placeholder="说点什么，让对话开始吧" maxlength="500" autocomplete="off">
+        <button class="btn" id="btn-send" data-primary-action>发送</button>
+      </div>
+    </section>
+    <!-- SECTION: panel diary -->
+    <section class="tab-panel" id="panel-diary">
+      <div class="sec-title">随记 · 心情</div>
+      <div class="btn-row"><button class="btn" id="btn-diary-new">✚ 写一页今天的随记</button></div>
+      <div id="diary-list"></div>
+    </section>
+    <!-- SECTION: panel cards -->
+    <section class="tab-panel" id="panel-cards">
+      <div class="glass env-card">
+        <div style="font-size:.8rem;color:var(--ink2);margin-bottom:6px">今日一抽</div>
+        <span class="env" id="btn-envelope" role="button" aria-label="抽一张字卡" data-primary-action>💌</span>
+        <div id="envelope-result"></div>
+      </div>
+      <div class="sec-title">字卡库</div>
+      <div class="btn-row"><button class="btn small" id="btn-card-add">✚ 添加字卡</button><button class="btn small ghost" id="btn-card-fav">♡ 只看收藏</button></div>
+      <div id="cards-list" style="margin-top:12px"></div>
+    </section>
+    <!-- SECTION: panel news -->
+    <section class="tab-panel" id="panel-news">
+      <div class="glass good-morning">
+        <div class="gm-title">GOOD MORNING</div>
+        <div class="gm-sub">— 今日公告已送达 —</div>
+        <div class="gm-row">
+          <div class="cell"><span>TA 的天气</span><b id="gm-weather">☀️ 晴朗</b></div>
+          <div class="cell"><span>TA 的心情</span><b id="gm-mood">—</b></div>
+          <div class="cell"><span>相伴</span><b id="gm-days">0 天</b></div>
+        </div>
+        <p id="gm-status" class="hint" style="margin:8px 0"></p>
+        <div class="btn-row" style="justify-content:center">
+          <button class="btn small ghost" id="btn-gm-refresh">让TA说今天的状态</button>
+          <button class="btn small ghost" id="btn-gm-edit">我来写</button>
+        </div>
+      </div>
+      <div class="glass counter-card">
+        <div class="num" id="days-num">0</div>
+        <div class="cap">我们已经相伴了这么多天</div>
+        <div class="btn-row" style="justify-content:center"><button class="btn small ghost" id="btn-days-edit">修改开始日</button></div>
+      </div>
+      <div class="sec-title">纪念日</div>
+      <div class="glass">
+        <div id="anni-list"></div>
+        <div class="btn-row"><button class="btn small" id="btn-anni-add">✚ 添加纪念日</button></div>
+      </div>
+    </section>
+    <!-- SECTION: panel me -->
+    <section class="tab-panel" id="panel-me">
+      <div class="sec-title">外观</div>
+      <div class="glass"><div id="theme-list"></div></div>
+      <div class="sec-title">数据与安全</div>
+      <div class="glass">
+        <div class="store-state">
+          <div class="store-pill" id="pill-idb">浏览器本地库<br><b>检测中…</b></div>
+          <div class="store-pill" id="pill-ls">双写镜像<br><b>检测中…</b></div>
+        </div>
+        <p class="hint">每次操作都会自动同时写入两处，其中一处被清理时另一处会自动恢复，无需手动备份。</p>
+        <div class="btn-row">
+          <button class="btn small ghost" id="btn-export">导出备份</button>
+          <button class="btn small ghost" id="btn-import">导入备份</button>
+          <input type="file" id="import-file" accept=".json,application/json" class="hidden">
+        </div>
+        <div class="row-item"><span><span class="r-ico">🔒</span>数字密码锁</span><span><button class="btn small ghost" id="btn-pass">设置</button></span></div>
+        <div class="row-item"><span><span class="r-ico">🧹</span>清空全部数据</span><button class="btn small danger" id="btn-reset">清空</button></div>
+      </div>
+      <div class="sec-title">更多</div>
+      <div class="glass">
+        <div class="row-item" data-go="settings"><span><span class="r-ico">⚙️</span>聊天与回复设置</span><span class="r-arrow">›</span></div>
+        <div class="row-item" data-go="theme"><span><span class="r-ico">🎨</span>主题编辑器（自定义颜色）</span><span class="r-arrow">›</span></div>
+        <div class="row-item" data-go="guide"><span><span class="r-ico">📲</span>安装到手机 · 数据不丢的原理</span><span class="r-arrow">›</span></div>
+        <div class="row-item" data-go="about"><span><span class="r-ico">🕊️</span>关于本站与声明</span><span class="r-arrow">›</span></div>
+      </div>
+      <p class="hint" style="text-align:center;padding:8px 0 20px">Milk · 本地数据版 · 不收集任何信息</p>
+    </section>
+  </main>
+  <nav id="tabbar">
+    <button class="tab-btn on" data-tab="chat"><span class="ti">💬</span>聊天</button>
+    <button class="tab-btn" data-tab="diary"><span class="ti">📔</span>随记</button>
+    <button class="tab-btn" data-tab="cards"><span class="ti">💌</span>字卡</button>
+    <button class="tab-btn" data-tab="news"><span class="ti">📣</span>公告</button>
+    <button class="tab-btn" data-tab="me"><span class="ti">🌙</span>我的</button>
+  </nav>
+</div>
+
+<!-- SECTION: call overlay -->
+<div id="call-screen" class="hidden">
+  <div></div>
+  <div>
+    <div class="c-ava" id="call-ava">🫖</div>
+    <div class="c-title" id="call-title">对方邀请您进行视频通话</div>
+    <div class="c-sub" id="call-sub"></div>
+    <div class="c-timer hidden" id="call-timer">00:00</div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:20px">
+    <div class="c-ops" id="call-ops"></div>
+    <div class="c-note">装饰性界面 · 不调用摄像头 · 无任何通话能力</div>
+  </div>
+</div>
+
+<div id="modal-root" class="hidden"></div>
+<div id="toast"></div>
+
+<script>
+/* SECTION: store — IndexedDB 主存储 + localStorage 自动镜像双写 */
+(function(){
+'use strict';
+var DB_NAME='milk-db', STORE='state', KEY='snapshot', LS_KEY='milk_ls_snapshot';
+function Store(){ this.db='ok'; this.ls='ok'; }
+var S={
+  dbReady:false, lsOK:true, _db:null, _pending:null,
+  /* 初始化：读取双份数据，取较新者，落后一侧自动补写（自愈恢复） */
+  init:function(cb){
+    var self=this;
+    try{ localStorage.getItem(LS_KEY); }catch(e){ self.lsOK=false; }
+    function fromLS(){
+      try{
+        var raw=localStorage.getItem(LS_KEY);
+        if(raw) return JSON.parse(raw);
+      }catch(e){ self.lsOK=false; }
+      return null;
+    }
+    if(!('indexedDB' in window)){
+      self.db='missing';
+      var d=fromLS(); self.dbReady=false;
+      cb(d); return;
+    }
+    try{
+      var req=indexedDB.open(DB_NAME,1);
+      req.onupgradeneeded=function(){ req.result.createObjectStore(STORE); };
+      req.onsuccess=function(){
+        self._db=req.result; self.dbReady=true;
+        try{
+          var tx=self._db.transaction(STORE,'readonly');
+          var g=tx.objectStore(STORE).get(KEY);
+          g.onsuccess=function(){
+            var dbData=g.result||null;
+            var lsData=fromLS();
+            var winner=dbData, loser='ls';
+            if(!dbData&&lsData){ winner=lsData; }
+            else if(dbData&&lsData){
+              if((lsData._t||0)>(dbData._t||0)){ winner=lsData; loser='db'; }
+            }
+            if(winner){ if(loser==='ls') self._toLS(winner); else self._toDB(winner); }
+            cb(winner);
+          };
+          g.onerror=function(){ self.db='error'; cb(fromLS()); };
+        }catch(e){ self.db='error'; cb(fromLS()); }
+      };
+      req.onerror=function(){ self.db='error'; cb(fromLS()); };
+    }catch(e){ self.db='error'; cb(fromLS()); }
+  },
+  _toLS:function(data){
+    try{ localStorage.setItem(LS_KEY, JSON.stringify(data)); this.ls='ok'; }
+    catch(e){ this.ls=(e&&e.name==='QuotaExceededError')?'full':'error'; }
+  },
+  _toDB:function(data){
+    if(!this._db) return;
+    try{
+      var tx=this._db.transaction(STORE,'readwrite');
+      tx.objectStore(STORE).put(data,KEY);
+    }catch(e){ this.db='error'; }
+  },
+  /* 每次保存双写；localStorage 满/失败不影响主流程，只降级提示 */
+  save:function(data){
+    data._t=Date.now();
+    this._toDB(data); this._toLS(data);
+    if(this.ls!=='ok' && navigator.storage && navigator.storage.persist){
+      navigator.storage.persisted().then(function(p){ if(!p) navigator.storage.persist(); });
+    }
+  },
+  health:function(){
+    return { db: this.db==='ok'?(this.dbReady?'ok':'opening'):this.db, ls:this.ls,
+             persist:null };
+  },
+  checkPersist:function(cb){
+    if(navigator.storage&&navigator.storage.persisted){
+      try{ navigator.storage.persisted().then(function(p){cb(p);}).catch(function(){cb(null);}); return; }
+      catch(e){}
+    }
+    cb(null);
+  },
+  wipe:function(){
+    try{ localStorage.removeItem(LS_KEY); }catch(e){}
+    if(this._db){ try{
+      var tx=this._db.transaction(STORE,'readwrite'); tx.objectStore(STORE).delete(KEY);
+    }catch(e){} }
+  }
+};
+window.MilkStore=S;
+})();
+
+</script>
+<script>
+/* SECTION: data — 预置示例数据（全部为原创占位内容，可在应用内自行替换/批量导入） */
+window.MILK_DATA = {
+  /* 示例字卡：歌名 + 一句词。原站的歌词受版权保护未随包分发，导入你自己的字卡即可 */
+  lyrics: [
+    {id:'l1', title:'示例 · 晨光', line:'你把窗帘拉开一寸，房间就多了一寸你', fav:false},
+    {id:'l2', title:'示例 · 晚风', line:'晚风路过我，替我摸了你的头', fav:false},
+    {id:'l3', title:'示例 · 星轨', line:'所有星星都在赶路，只有你停在我心上', fav:false},
+    {id:'l4', title:'示例 · 雨声', line:'雨把世界下小了，只剩伞下的我们', fav:false},
+    {id:'l5', title:'示例 · 海', line:'我把名字写进浪里，海替我跑去看你', fav:false},
+    {id:'l6', title:'示例 · 四季', line:'春天寄来你的信，秋天还没读完', fav:false},
+    {id:'l7', title:'示例 · 月亮', line:'今晚的月亮，是我留给你的晚安', fav:false},
+    {id:'l8', title:'示例 · 雪', line:'第一片雪落下时，我正好想起你', fav:false},
+    {id:'l9', title:'示例 · 光年', line:'隔着光年，我也听得见你的心跳', fav:false},
+    {id:'l10', title:'示例 · 梦', line:'我在梦里练习告白，醒来你还在', fav:false},
+    {id:'l11', title:'示例 · 花', line:'花开得不慌张，像你喜欢你的样子', fav:false},
+    {id:'l12', title:'示例 · 云', line:'云把天空填满，像你把我的想念填满', fav:false}
+  ],
+  /* 回复库：按概率抽取，与原版「基于概率算法」一致 */
+  replies: {
+    default: [
+      '嗯，我在。', '你今天想我了吗？', '我也这么觉得。',
+      '再多说一点，我想听。', '我知道的。', '那我们一起加油。',
+      '你已经很棒了。', '我一直在的。', '今天也要好好吃饭。',
+      '这句话我记下了。'
+    ],
+    love: [ '我也是。', '心动了。', '你这样说我怎么办。', '爱你。' ],
+    sad:  [ '过来，抱一下。', '没关系的，有我在。', '我陪你待一会儿。', '哭出来也可以。' ]
+  },
+  keywords: { love:['喜欢','爱','想你','爱你'], sad:['难过','哭','累','emo','心情不好'] },
+  themes: [
+    {id:'cream', name:'奶油粉', v:{bg1:'#f7e3ec',bg2:'#e3d5f5',accent:'#c96f9b',accent2:'#8f6fc9',ink:'#4a3550',card:'rgba(255,255,255,.72)',bme:'#c96f9b',boshi:'rgba(255,255,255,.9)'}},
+    {id:'mint', name:'薄荷青', v:{bg1:'#e0f4ef',bg2:'#d5ecf5',accent:'#3f9e8a',accent2:'#5f8fc9',ink:'#2f4a48',card:'rgba(255,255,255,.72)',bme:'#3f9e8a',boshi:'rgba(255,255,255,.9)'}},
+    {id:'dusk', name:'暮紫', v:{bg1:'#efe0f5',bg2:'#d9d5f5',accent:'#8f5fbf',accent2:'#c96f9b',ink:'#3a2c52',card:'rgba(255,255,255,.7)',bme:'#8f5fbf',boshi:'rgba(255,255,255,.9)'}},
+    {id:'night', name:'夜航', v:{bg1:'#2b2440',bg2:'#171226',accent:'#b79ae0',accent2:'#e0a7c9',ink:'#e8e2f5',card:'rgba(50,40,74,.8)',bme:'#6a4f96',boshi:'rgba(60,50,86,.92)'}},
+    {id:'amber', name:'琥珀', v:{bg1:'#f7ecd9',bg2:'#f0dcc7',accent:'#c9853f',accent2:'#a85f3f',ink:'#5a4230',card:'rgba(255,255,255,.74)',bme:'#c9853f',boshi:'rgba(255,255,255,.9)'}},
+    {id:'cyan', name:'雨雾青', v:{bg1:'#e4eef2',bg2:'#dbe4f0',accent:'#4f82a0',accent2:'#7a6fa8',ink:'#33454f',card:'rgba(255,255,255,.74)',bme:'#4f82a0',boshi:'rgba(255,255,255,.9)'}}
+  ],
+  weathers: ['☀️ 晴朗','⛅ 多云','🌧️ 小雨','❄️ 落雪','🌫️ 起雾','🌈 雨后天晴','🌙 晴夜','🍃 大风'],
+  moods: ['元气满满','平静','有点想你了','开心','疲惫但值得','被爱着','期待明天']
+};
+
+</script>
+<script>
+/* SECTION: app — 主逻辑 */
+(function(){
+'use strict';
+var D=window.MILK_DATA, $=function(s,r){return (r||document).querySelector(s)}, $$=function(s,r){return [].slice.call((r||document).querySelectorAll(s))};
+var state=null;
+
+function defaultState(){
+  return {
+    onboarded:false, name:'梦角', ava:'🫖', startDate:null,
+    pass:'', showAva:false, chatCustom:'',
+    chat:[], diary:[], cards:D.lyrics.map(function(c){return {id:c.id,title:c.title,line:c.line,fav:false}}),
+    today:null, annis:[], theme:'cream', customTheme:null,
+    envLast:null, envDate:''
+  };
+}
+function save(){ MilkStore.save(state); }
+
+/* ---------- helpers ---------- */
+function toast(msg){ var t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(function(){t.classList.remove('show')},2200); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]}); }
+function uid(){ return 'x'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function fmtMD(s){ if(!s)return '--月--日'; var p=s.split('-'); return (parseInt(p[1],10))+'月'+(parseInt(p[2],10))+'日'; }
+function daysBetween(a,b){ return Math.max(0, Math.floor((new Date(b)-new Date(a))/864e5)); }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+/* SECTION: modal */
+function modal(title, bodyHTML, onOpen){
+  var root=$('#modal-root'); root.classList.remove('hidden');
+  root.innerHTML='<div class="sheet"><div class="sheet-head"><b>'+esc(title)+'</b><button class="icon-btn" id="m-close">✕</button></div><div id="m-body">'+bodyHTML+'</div></div>';
+  $('#m-close').onclick=closeModal;
+  root.onclick=function(e){ if(e.target===root) closeModal(); };
+  if(onOpen) onOpen($('#m-body'));
+}
+function closeModal(){ var root=$('#modal-root'); root.classList.add('hidden'); root.innerHTML=''; }
+
+/* SECTION: theme */
+function applyTheme(){
+  var th=(state.theme==='custom'?state.customTheme:D.themes.filter(function(t){return t.id===state.theme})[0])||D.themes[0];
+  var r=document.documentElement.style; var v=th.v;
+  r.setProperty('--bg1',v.bg1); r.setProperty('--bg2',v.bg2); r.setProperty('--accent',v.accent);
+  r.setProperty('--accent2',v.accent2); r.setProperty('--ink',v.ink); r.setProperty('--card',v.card);
+  r.setProperty('--bme',v.bme); r.setProperty('--boshi',v.boshi);
+  var meta=$('meta[name=theme-color]'); if(meta) meta.setAttribute('content',v.bg1);
+}
+var CV={bg1:'#f7e3ec',bg2:'#e3d5f5',accent:'#c96f9b',accent2:'#8f6fc9',ink:'#4a3550',card:'rgba(255,255,255,.72)',bme:'#c96f9b',boshi:'rgba(255,255,255,.9)'};
+function openThemeEditor(){
+  var cur=state.theme==='custom'?state.customTheme.v:Object.assign({},CV,D.themes.filter(function(t){return t.id===state.theme})[0].v);
+  var labels={bg1:'背景色 A',bg2:'背景色 B',accent:'主色',accent2:'辅色',ink:'文字色',card:'卡片底色',bme:'我方气泡',boshi:'对方气泡'};
+  var html='<p class="hint">调整颜色后点保存，即时生效并自动存入本地数据。</p><div style="margin-top:10px">';
+  Object.keys(labels).forEach(function(k){
+    html+='<div class="color-row"><label>'+labels[k]+'</label><input type="color" data-k="'+k+'" value="'+toHex(cur[k])+'"></div>';
+  });
+  html+='</div><div class="btn-row"><button class="btn" id="th-save">保存自定义主题</button><button class="btn ghost" id="th-reset">用主题色覆盖卡片底色</button></div>';
+  modal('主题编辑器',html,function(body){
+    $('#th-save',body).onclick=function(){
+      var v={}; $$('input[type=color]',body).forEach(function(i){v[i.dataset.k]=i.value});
+      state.customTheme={id:'custom',name:'自定义',v:v}; state.theme='custom'; applyTheme(); save(); toast('主题已保存'); closeModal();
+    };
+    $('#th-reset',body).onclick=function(){
+      var i1=$('input[data-k=accent]',body).value;
+      $('input[data-k=card]',body).value=i1; $('input[data-k=boshi]',body).value=i1;
+    };
+  });
+}
+function toHex(c){
+  if(!c) return '#ffffff';
+  if(c[0]==='#') return c.length===7?c:c;
+  var m=c.match(/(\d+)[^\d]+(\d+)[^\d]+(\d+)/);
+  if(!m) return '#ffffff';
+  return '#'+[m[1],m[2],m[3]].map(function(n){return(+n).toString(16).padStart(2,'0')}).join('');
+}
+function renderThemes(){
+  var wrap=$('#theme-list'); wrap.innerHTML='';
+  D.themes.forEach(function(t){
+    var el=document.createElement('div');
+    el.className='t-item'+(state.theme===t.id?' on':'');
+    el.style.background='linear-gradient(120deg,'+t.v.bg1+','+t.v.bg2+')'; el.style.color=t.v.ink;
+    el.textContent=t.name;
+    el.onclick=function(){ state.theme=t.id; applyTheme(); save(); renderThemes(); toast('已切换：'+t.name); };
+    wrap.appendChild(el);
+  });
+  var c=document.createElement('div');
+  c.className='t-item'+(state.theme==='custom'?' on':'');
+  if(state.customTheme){ c.style.background='linear-gradient(120deg,'+state.customTheme.v.bg1+','+state.customTheme.v.bg2+')'; c.style.color=state.customTheme.v.ink; }
+  c.textContent='自定义 🎨';
+  c.onclick=openThemeEditor; wrap.appendChild(c);
+}
+
+/* SECTION: tabs */
+function switchTab(name){
+  $$('.tab-btn').forEach(function(b){b.classList.toggle('on',b.dataset.tab===name)});
+  $$('.tab-panel').forEach(function(p){p.classList.toggle('active',p.id==='panel-'+name)});
+  var titles={chat:['𝓜𝓲𝓻𝓪𝓬𝓵𝓮','你就是奇迹本身'],diary:['随记','把今天留一页给未来'],cards:['字卡','歌词 · 抽卡 · 收藏'],news:['公告','今日状态与纪念日'],me:['我的','数据 · 外观 · 安装']};
+  var t=titles[name]||titles.chat;
+  $('#page-title').childNodes[0].nodeValue=t[0]; $('#page-sub').textContent=t[1];
+  if(name==='diary') renderDiary(); if(name==='cards') renderCards(); if(name==='news') renderNews(); if(name==='me') renderMe();
+  if(name==='chat'){ renderChat(); scrollChat(); }
+}
+
+/* SECTION: chat */
+function replyFor(text){
+  var pools=[D.replies.default];
+  Object.keys(D.keywords).forEach(function(k){
+    if(D.keywords[k].some(function(w){return text.indexOf(w)>-1})) pools.unshift(D.replies[k]);
+  });
+  var all=[]; pools.forEach(function(p){all=all.concat(p)});
+  return pick(all);
+}
+function pushMsg(who, text){
+  state.chat.push({who:who, text:text, t:Date.now()});
+  if(state.chat.length>400) state.chat=state.chat.slice(-400);
+  save();
+}
+function renderChat(){
+  var list=$('#chat-list'); list.innerHTML='';
+  if(!state.chat.length){
+    list.innerHTML='<div class="chat-sys">✦ 我们的故事，始于此刻 ✦<br>说点什么，让对话开始吧</div>';
+    return;
+  }
+  var lastDay='';
+  state.chat.forEach(function(m,i){
+    var day=new Date(m.t).toDateString();
+    if(day!==lastDay){ lastDay=day;
+      var sep=document.createElement('div'); sep.className='chat-sys'; sep.textContent=fmtMDStr(m.t); list.appendChild(sep); }
+    var el=document.createElement('div');
+    el.className='msg '+(m.who==='me'?'me':'oshi');
+    var ava=(m.who==='oshi'&&state.showAva)?'<span class="m-ava">'+esc(state.ava)+'</span>':'';
+    el.innerHTML=ava+esc(m.text);
+    el.onclick=function(){ /* 长按复制 */ };
+    list.appendChild(el);
+    if(i%12===0){ var tm=document.createElement('div'); tm.className='msg-time'; tm.textContent=timeStr(m.t); list.appendChild(tm); }
+  });
+}
+function fmtMDStr(t){ var d=new Date(t); return (d.getMonth()+1)+'月'+d.getDate()+'日'; }
+function timeStr(t){ var d=new Date(t); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function scrollChat(){ var l=$('#chat-list'); l.scrollTop=l.scrollHeight; }
+function sendChat(){
+  var inp=$('#chat-input'), text=inp.value.trim(); if(!text) return;
+  inp.value=''; pushMsg('me',text); renderChat(); scrollChat();
+  var typing=document.createElement('div'); typing.className='typing'; typing.innerHTML='<i></i><i></i><i></i>';
+  $('#chat-list').appendChild(typing); scrollChat();
+  var delay=600+Math.random()*1400;
+  setTimeout(function(){
+    typing.remove();
+    var r=state.chatCustom&&Math.random()<.35?state.chatCustom:replyFor(text);
+    pushMsg('oshi',r); renderChat(); scrollChat();
+  },delay);
+}
+function oshiSettings(){
+  var html='<div class="field"><label>TA 的名字</label><input type="text" id="os-name" maxlength="20" value="'+esc(state.name)+'"></div>'+
+  '<div class="field"><label>TA 的头像（emoji / 单个字符）</label><input type="text" id="os-ava" maxlength="4" value="'+esc(state.ava)+'"></div>'+
+  '<div class="row-item"><span>在指示器左侧显示头像</span><div class="switch'+(state.showAva?' on':'')+'" id="os-ava-sw"></div></div>'+
+  '<div class="field" style="margin-top:12px"><label>自定义回复文案（留空则用概率回复库）</label><textarea id="os-custom" rows="2" maxlength="200">'+esc(state.chatCustom)+'</textarea></div>'+
+  '<div class="btn-row"><button class="btn" id="os-save">保存</button><button class="btn ghost" id="os-clear">清空聊天记录</button></div>';
+  modal('梦角设置',html,function(body){
+    $('#os-ava-sw',body).onclick=function(){ this.classList.toggle('on'); };
+    $('#os-save',body).onclick=function(){
+      state.name=$('#os-name',body).value.trim()||'梦角';
+      state.ava=$('#os-ava',body).value.trim()||'🫖';
+      state.showAva=$('#os-ava-sw',body).classList.contains('on');
+      state.chatCustom=$('#os-custom',body).value.trim();
+      save(); applyIdentity(); renderChat(); closeModal(); toast('已保存');
+    };
+    $('#os-clear',body).onclick=function(){
+      if(confirm('确定清空全部聊天记录？此操作不可撤销。')){ state.chat=[]; save(); renderChat(); closeModal(); toast('聊天记录已清空'); }
+    };
+  });
+}
+function applyIdentity(){
+  $('#oshi-name').textContent=state.name;
+  $('#oshi-avatar').textContent=state.ava;
+  $('#call-ava').textContent=state.ava;
+  $('#lock-ava').textContent=state.ava;
+}
+
+/* SECTION: diary */
+function renderDiary(){
+  var wrap=$('#diary-list'); wrap.innerHTML='';
+  if(!state.diary.length){ wrap.innerHTML='<div class="empty">还没有随记，写下第一页吧</div>'; return; }
+  var sorted=state.diary.slice().sort(function(a,b){return b.date.localeCompare(a.date)});
+  sorted.forEach(function(d){
+    var oshiRec=state.chat.filter(function(m){return m.who==='oshi'&&new Date(m.t).toDateString()===new Date(d.date+'T12:00').toDateString()});
+    var el=document.createElement('div'); el.className='glass day-card';
+    var winfo=d.weather?'今日天气 '+esc(d.weather):'';
+    el.innerHTML='<div class="dc-head"><span class="dc-date">'+fmtMD(d.date)+' · 第 '+(sorted.indexOf(d)+1)+' 页</span>'+
+      (d.moodName?'<span class="dc-mood" style="background:'+d.moodColor+'">'+esc(d.moodName)+'</span>':'')+'</div>'+
+      (winfo?'<div class="dc-w">'+winfo+'</div>':'')+
+      '<div class="dc-note">'+esc(d.note||'')+'</div>'+
+      (oshiRec.length?'<div class="dc-oshi">'+esc(state.name)+' 这天的话：'+esc(oshiRec.map(function(m){return m.text}).join(' / ').slice(0,80))+'</div>':'')+
+      '<div class="dc-ops"><button data-del="'+d.date+'">删除</button><button data-edit="'+d.date+'">编辑</button></div>';
+    wrap.appendChild(el);
+  });
+  $$('[data-del]',wrap).forEach(function(b){b.onclick=function(){
+    if(confirm('删除 '+fmtMD(b.dataset.del)+' 这页随记？')){ state.diary=state.diary.filter(function(x){return x.date!==b.dataset.del}); save(); renderDiary(); }
+  }});
+  $$('[data-edit]',wrap).forEach(function(b){b.onclick=function(){ openDiary(b.dataset.edit); }});
+}
+function openDiary(date){
+  var d=date?state.diary.filter(function(x){return x.date===date})[0]:null;
+  var moods=D.moods.map(function(m,i){return {name:m,color:['#c96f9b','#5f8fc9','#3f9e8a','#c9853f','#8f5fbf','#a04f6f','#4f82a0'][i]}});
+  moods.push({name:'自定义',color:null});
+  var html='<div class="field"><label>日期</label><input type="date" id="dy-date" value="'+(date||todayStr())+'"></div>'+
+  '<div class="field"><label>随记</label><textarea id="dy-note" rows="4" maxlength="2000" placeholder="今天发生了什么？">'+esc(d?d.note:'')+'</textarea></div>'+
+  '<div class="field"><label>今日天气</label><select id="dy-w"><option value="">不填</option>'+D.weathers.map(function(w){return '<option'+(d&&d.weather===w?' selected':'')+'>'+esc(w)+'</option>'}).join('')+'</select></div>'+
+  '<div class="field"><label>自定义心情（选一个并可调颜色）</label><div class="mood-pick" id="dy-moods">'+
+    moods.map(function(m){return '<span class="chip'+(d&&d.moodName===m.name?' sel':'')+'" data-m="'+esc(m.name)+'" data-c="'+(m.color||'')+'">'+esc(m.name)+'</span>'}).join('')+
+  '</div><div class="hint" id="dy-cc" style="display:none;margin-top:6px">颜色：<input type="color" id="dy-color" value="'+(d&&d.moodColor?toHex(d.moodColor):'#c96f9b')+'"></div></div>'+
+  '<div class="btn-row"><button class="btn" id="dy-save">保存这一页</button></div>';
+  modal(date?'编辑随记':'新的随记',html,function(body){
+    var selM=d?d.moodName:'', selC=d?d.moodColor:'';
+    $$('.chip',body).forEach(function(ch){ ch.onclick=function(){
+      $$('.chip',body).forEach(function(x){x.classList.remove('sel')}); ch.classList.add('sel');
+      selM=ch.dataset.m; selC=ch.dataset.c||(ch.dataset.m==='自定义'?null:'');
+      $('#dy-cc',body).style.display=ch.dataset.m==='自定义'?'block':'none';
+      if(ch.dataset.m!=='自定义'&&ch.dataset.c) selC=ch.dataset.c;
+    }});
+    $('#dy-save',body).onclick=function(){
+      var dt=$('#dy-date',body).value||todayStr();
+      var note=$('#dy-note',body).value.trim(), weather=$('#dy-w',body).value;
+      if(selM==='自定义'&&!selC) selC=$('#dy-color',body).value;
+      if(!note&&!weather&&!selM){ toast('至少写点什么吧'); return; }
+      var rec={date:dt,note:note,weather:weather,moodName:selM,moodColor:selC||'#c96f9b'};
+      var idx=-1; state.diary.forEach(function(x,i){if(x.date===dt)idx=i});
+      if(idx>-1) state.diary[idx]=rec; else state.diary.push(rec);
+      save(); renderDiary(); closeModal(); toast('随记已保存，数据已自动双写');
+    };
+  });
+}
+
+/* SECTION: cards */
+var cardFavOnly=false;
+function renderCards(){
+  var wrap=$('#cards-list'); wrap.innerHTML='';
+  var list=state.cards.filter(function(c){return !cardFavOnly||c.fav});
+  $('#btn-card-fav').textContent=cardFavOnly?'★ 收藏中':'♡ 只看收藏';
+  if(!list.length){ wrap.innerHTML='<div class="empty">'+(cardFavOnly?'还没有收藏的字卡':'字卡库是空的，点上方添加或批量导入')+'</div>'; return; }
+  list.forEach(function(c){
+    var el=document.createElement('div'); el.className='lyric-card'+(c.fav?' fav':'');
+    el.innerHTML='<div class="lc-t">'+esc(c.title)+'</div><div class="lc-l">'+esc(c.line)+'</div>'+
+      '<div class="lc-ops"><button data-fav="'+c.id+'" title="收藏">'+(c.fav?'★':'☆')+'</button><button data-edit="'+c.id+'" title="编辑">✎</button><button data-del="'+c.id+'" title="删除">🗑</button></div>';
+    wrap.appendChild(el);
+  });
+  $$('[data-fav]',wrap).forEach(function(b){b.onclick=function(){ var c=find(b.dataset.fav); c.fav=!c.fav; save(); renderCards(); }});
+  $$('[data-edit]',wrap).forEach(function(b){b.onclick=function(){ openCardEdit(find(b.dataset.edit)); }});
+  $$('[data-del]',wrap).forEach(function(b){b.onclick=function(){
+    if(confirm('删除这张字卡？')){ state.cards=state.cards.filter(function(x){return x.id!==b.dataset.del}); save(); renderCards(); }
+  }});
+}
+function find(id){ return state.cards.filter(function(c){return c.id===id})[0]; }
+function openCardEdit(c){
+  var html='<div class="field"><label>歌名</label><input type="text" id="cd-t" maxlength="60" value="'+esc(c?c.title:'')+'"></div>'+
+  '<div class="field"><label>歌词 / 字卡文案</label><textarea id="cd-l" rows="2" maxlength="300">'+esc(c?c.line:'')+'</textarea></div>'+
+  '<div class="btn-row"><button class="btn" id="cd-save">保存</button></div>';
+  modal(c?'编辑字卡':'添加字卡',html,function(body){
+    $('#cd-save',body).onclick=function(){
+      var t=$('#cd-t',body).value.trim(), l=$('#cd-l',body).value.trim();
+      if(!t||!l){ toast('歌名和文案都要填哦'); return; }
+      if(c){ c.title=t; c.line=l; } else state.cards.push({id:uid(),title:t,line:l,fav:false});
+      save(); renderCards(); closeModal(); toast('已保存');
+    };
+  });
+}
+function drawEnvelope(){
+  if(!state.cards.length){ toast('字卡库是空的，先添加字卡'); return; }
+  var c=pick(state.cards);
+  var box=$('#envelope-result');
+  box.innerHTML='<div class="reveal-card"><div style="font-size:.72rem;opacity:.8;letter-spacing:.2em">ANSWER · 今日字卡</div>'+
+    '<div style="font-size:1.05rem;font-weight:600;margin-top:8px">'+esc(c.title)+'</div>'+
+    '<div style="font-size:.88rem;font-style:italic;margin-top:6px;opacity:.95">'+esc(c.line)+'</div></div>';
+  state.envLast=c.id; state.envDate=todayStr(); save();
+}
+
+/* SECTION: news */
+function renderNews(){
+  var t=state.today, day=t&&t.date===todayStr()?t:null;
+  $('#gm-weather').textContent=day?day.weather:(state.name+' 的天气还没更新');
+  $('#gm-mood').textContent=day?day.mood:(state.name+' 还没留心情');
+  var ds=state.startDate?daysBetween(state.startDate,todayStr()):0;
+  $('#gm-days').textContent=ds+' 天';
+  $('#days-num').textContent=ds;
+  $('#gm-status').textContent=day?day.text:'今天也要元气满满，我在这里陪着你 ✦';
+  var wrap=$('#anni-list'); wrap.innerHTML='';
+  if(!state.annis.length){ wrap.innerHTML='<div class="empty" style="padding:12px">还没有纪念日</div>'; }
+  state.annis.slice().sort(function(a,b){return a.date.localeCompare(b.date)}).forEach(function(a){
+    var el=document.createElement('div'); el.className='anni-item';
+    var dd=Math.round((new Date(a.date+'T00:00:00')-new Date(todayStr()+'T00:00:00'))/864e5);
+    el.innerHTML='<span>'+esc(a.name)+'<br><span class="hint">'+fmtMD(a.date)+'</span></span>'+
+      '<span><span class="d">'+(dd>=0?dd+' 天前':'还有 '+(-dd)+' 天')+'</span>　<button class="btn small ghost" data-an="'+a.id+'">删</button></span>';
+    wrap.appendChild(el);
+  });
+  $$('[data-an]',wrap).forEach(function(b){b.onclick=function(){
+    if(confirm('删除这个纪念日？')){ state.annis=state.annis.filter(function(x){return x.id!==b.dataset.an}); save(); renderNews(); }
+  }});
+}
+function genToday(){
+  state.today={date:todayStr(),weather:pick(D.weathers),mood:pick(D.moods),
+    text:pick(['今天也要元气满满，我在这里陪着你 ✦','我在想你了，你呢？','一切都好，因为你在。','记得喝水，记得想我。','今天的天气，适合见面。'])};
+  save(); renderNews(); toast(state.name+' 的今日状态已送达');
+}
+function editToday(){
+  var day=state.today&&state.today.date===todayStr()?state.today:{weather:D.weathers[0],mood:D.moods[0],text:''};
+  var html='<div class="field"><label>天气</label><select id="td-w">'+D.weathers.map(function(w){return '<option'+(day.weather===w?' selected':'')+'>'+esc(w)+'</option>'}).join('')+'</select></div>'+
+  '<div class="field"><label>心情</label><select id="td-m">'+D.moods.map(function(m){return '<option'+(day.mood===m?' selected':'')+'>'+esc(m)+'</option>'}).join('')+'</select></div>'+
+  '<div class="field"><label>状态文案</label><textarea id="td-t" rows="2" maxlength="200">'+esc(day.text)+'</textarea></div>'+
+  '<div class="btn-row"><button class="btn" id="td-save">发布今日公告</button></div>';
+  modal('我来写今日状态',html,function(body){
+    $('#td-save',body).onclick=function(){
+      state.today={date:todayStr(),weather:$('#td-w',body).value,mood:$('#td-m',body).value,text:$('#td-t',body).value.trim()};
+      save(); renderNews(); closeModal(); toast('今日公告已发布');
+    };
+  });
+}
+function editDays(){
+  modal('相伴开始日',['<div class="field"><label>你们故事开始的那天</label><input type="date" id="dd" value="'+(state.startDate||todayStr())+'"></div>',
+    '<div class="btn-row"><button class="btn" id="dd-ok">保存</button></div>'].join(''),function(body){
+    $('#dd-ok',body).onclick=function(){ state.startDate=$('#dd',body).value||todayStr(); save(); renderNews(); closeModal(); toast('已更新'); };
+  });
+}
+function addAnni(){
+  modal('添加纪念日','<div class="field"><label>名称</label><input type="text" id="an-n" maxlength="30" placeholder="比如：第一次连接"></div>'+
+  '<div class="field"><label>日期</label><input type="date" id="an-d" value="'+todayStr()+'"></div>'+
+  '<div class="btn-row"><button class="btn" id="an-ok">添加</button></div>',function(body){
+    $('#an-ok',body).onclick=function(){
+      var n=$('#an-n',body).value.trim(), d=$('#an-d',body).value;
+      if(!n||!d){ toast('名称和日期都要填'); return; }
+      state.annis.push({id:uid(),name:n,date:d}); save(); renderNews(); closeModal(); toast('纪念日已添加');
+    };
+  });
+}
+
+/* SECTION: data mgmt */
+function exportData(){
+  var blob=new Blob([JSON.stringify({app:'milk-local',ver:1,exportedAt:Date.now(),data:state},null,2)],{type:'application/json'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='milk备份-'+todayStr()+'.json'; a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href)},4000);
+  toast('备份文件已导出（应急兜底，平时无需手动备份）');
+}
+function importData(file){
+  var r=new FileReader();
+  r.onload=function(){
+    try{
+      var obj=JSON.parse(r.result);
+      var data=obj.data&&obj.data.chat!==undefined?obj.data:obj;
+      if(!data||typeof data!=='object'||!Array.isArray(data.cards)) throw new Error('bad');
+      state=Object.assign(defaultState(),data);
+      save(); applyTheme(); applyIdentity(); switchTab('chat'); renderDiary(); renderCards(); renderNews();
+      toast('导入成功，数据已恢复并双写'); closeModal();
+    }catch(e){ toast('这个文件看起来不是 Milk 的备份'); }
+  };
+  r.readAsText(file);
+}
+function renderMe(){
+  MilkStore.checkPersist(function(p){
+    var h=MilkStore.health();
+    var pdb=$('#pill-idb'), pls=$('#pill-ls');
+    pdb.className='store-pill '+(h.db==='ok'?'ok':'bad');
+    pdb.innerHTML='浏览器本地库<br><b>'+(h.db==='ok'?'● 正常写入':'● 不可用')+'</b>';
+    pls.className='store-pill '+(h.ls==='ok'?'ok':'bad');
+    pls.innerHTML='双写镜像<br><b>'+(h.ls==='ok'?'● 已自动备份':(h.ls==='full'?'○ 空间满，仅单写':'○ 不可用，仅单写'))+'</b>';
+    if(p!==null){ pdb.innerHTML+='持久化 '+(p?'已授权':'未授权'); }
+  });
+}
+function passSettings(){
+  var html='<p class="hint">四位数字密码。设置后每次打开页面需解锁，防止身边人直接翻看。仅作基础遮挡，请勿设置重要账号同款密码。</p>'+
+  '<div class="field" style="margin-top:10px"><label>新密码（留空则关闭密码锁）</label><input type="password" id="ps" inputmode="numeric" maxlength="4" pattern="[0-9]*"></div>'+
+  '<div class="btn-row"><button class="btn" id="ps-ok">保存</button></div>';
+  modal('数字密码锁',html,function(body){
+    $('#ps-ok',body).onclick=function(){
+      var v=$('#ps',body).value;
+      if(v&&(v.length!==4||!/^\d{4}$/.test(v))){ toast('密码需为 4 位数字'); return; }
+      state.pass=v; save(); closeModal(); toast(v?'密码锁已开启':'密码锁已关闭');
+    };
+  });
+}
+
+/* SECTION: lock */
+function showLock(){ $('#lock-screen').classList.remove('hidden'); $('#lock-input').value=''; setTimeout(function(){$('#lock-input').focus()},300); }
+function tryUnlock(){
+  if($('#lock-input').value===state.pass){ $('#lock-screen').classList.add('hidden'); toast('连接成功 · CONNECTED'); }
+  else { $('#lock-err').textContent='密码不对哦'; $('#lock-input').value=''; }
+}
+
+/* SECTION: onboarding */
+var PROMISE_TEXT='我绝不盈利、造谣、污蔑或嘲讽，并对自己的使用行为负完全责任';
+function startOnboarding(){
+  var ob=$('#ob-screen'); ob.classList.remove('hidden');
+  var page=0;
+  function render(){
+    var body=$('#ob-body');
+    if(page===0){
+      body.innerHTML='<div class="ob-title script">𝓜𝓲𝓻𝓪𝓬𝓵𝓮</div><div class="ob-sub">你就是奇迹本身</div>'+
+      '<div class="ob-card"><h3 style="color:var(--accent);margin-bottom:6px">入场承诺</h3>'+
+      '<p class="hint" style="margin-bottom:10px">在下方输入框中，<i>逐字抄写</i>以下承诺，即可进入。</p>'+
+      '<div class="copy-line">'+PROMISE_TEXT+'</div>'+
+      '<div class="field"><input type="text" id="ob-promise" placeholder="请完整输入上方承诺后方可进入"></div>'+
+      '<div class="btn-row"><button class="btn" id="ob-next" data-primary-action>承诺并进入</button></div>'+
+      '<p class="hint" id="ob-err" style="color:#c05f5f;margin-top:8px"></p></div>';
+      $('#ob-next').onclick=function(){
+        if($('#ob-promise').value.trim()===PROMISE_TEXT){ page=1; render(); }
+        else $('#ob-err').textContent='请逐字抄写完整承诺哦';
+      };
+    }else{
+      body.innerHTML='<div class="ob-sub" style="margin-top:20px">第二步 · 认识你的梦角</div>'+
+      '<div class="ob-card">'+
+      '<div class="field"><label>怎么称呼 TA</label><input type="text" id="ob-name" placeholder="梦角" maxlength="20"></div>'+
+      '<div class="field"><label>TA 的头像（emoji）</label><input type="text" id="ob-ava" value="🫖" maxlength="4"></div>'+
+      '<div class="field"><label>你们开始的那天（用于计算相伴天数）</label><input type="date" id="ob-date"></div>'+
+      '<div class="btn-row"><button class="btn" id="ob-go" data-primary-action>开始使用</button><button class="btn ghost" id="ob-later">之后再设</button></div></div>';
+      function done(n,a,d){
+        state.name=n||'梦角'; state.ava=a||'🫖'; state.startDate=d||todayStr();
+        state.onboarded=true; save();
+        ob.classList.add('hidden'); applyTheme(); applyIdentity(); switchTab('chat');
+        if(state.pass) showLock();
+      }
+      $('#ob-go').onclick=function(){ done($('#ob-name').value.trim(),$('#ob-ava').value.trim(),$('#ob-date').value); };
+      $('#ob-later').onclick=function(){ done('','','' ); };
+    }
+  }
+  render();
+}
+
+/* SECTION: guide & about */
+function openGuide(){
+  modal('安装到手机 · 数据不丢的原理',
+  '<div class="guide-step"><div class="g-n">1</div><p>用 <b>Safari</b>（iPhone）或 Chrome/Edge（安卓）打开部署后的网址。</p></div>'+
+  '<div class="guide-step"><div class="g-n">2</div><p>iPhone：点分享按钮 → <kbd>添加到主屏幕</kbd>；安卓：菜单 → <kbd>安装应用 / 添加到主屏幕</kbd>。以后从桌面图标进入。</p></div>'+
+  '<div class="guide-step"><div class="g-n">3</div><p>从主屏幕图标打开时，页面运行在<b>独立容器</b>：你在浏览器里清理缓存、历史记录，<b>不会</b>清空它的数据。</p></div>'+
+  '<div class="guide-step"><div class="g-n">4</div><p>本页面还把每条数据<b>同时写入两处</b>（IndexedDB 与 localStorage 互为镜像），任意一处被清理，另一处会自动恢复——这就是你不用再频繁手动备份的原因。</p></div>'+
+  '<div class="guide-step"><div class="g-n">5</div><p>导出备份按钮仍然保留，作为换手机、误删等极端情况的兜底。数据全程只存在你自己的手机里，不上传任何服务器。</p></div>',null);
+}
+function openAbout(){
+  modal('关于本站与声明',
+  '<div class="ob-card"><h3>关于数据</h3><p class="hint">本站不盈利、不收集、不上传任何信息，全部数据只存在你手机的浏览器本地。字卡库预置内容为原创示例，歌词请自行导入；请勿分享含他人隐私的截图。</p></div>'+
+  '<div class="ob-card"><h3>关于回复</h3><p class="hint">字卡与回复基于概率算法，属于科学范畴。理性使用，它承载的是创作热情，不是迷信。</p></div>'+
+  '<div class="ob-card"><h3>关于视频通话</h3><p class="hint">通话功能仅作为界面装饰存在，本页面不包含任何摄像头调用逻辑，无实际通话与数据采集能力。</p></div>'+
+  '<div class="ob-card"><h3>关于年龄</h3><p class="hint">未成年使用者请在监护人知情并同意的情况下使用，合理安排时间，优先照顾好现实生活。</p></div>',null);
+}
+
+/* SECTION: call */
+var callTimer=null, callSec=0;
+function callUI(stage){
+  var sc=$('#call-screen'), ops=$('#call-ops'), title=$('#call-title'), sub=$('#call-sub'), tm=$('#call-timer');
+  tm.classList.add('hidden'); clearInterval(callTimer);
+  if(stage==='ring'){
+    sc.classList.remove('hidden');
+    title.textContent=state.name+' 邀请您进行视频通话';
+    sub.textContent='˙°ʚᕱ⑅ᕱɞ°˙';
+    ops.innerHTML='<button class="c-btn decline" id="c-no">📵</button><button class="c-btn accept" id="c-yes">📞</button>';
+    $('#c-no').onclick=function(){ sc.classList.add('hidden'); pushMsg('me','（挂断了通话）'); renderChat(); };
+    $('#c-yes').onclick=function(){ callUI('connecting'); };
+  }else if(stage==='connecting'){
+    title.textContent='正在连接…'; sub.textContent=''; ops.innerHTML='<button class="c-btn decline" id="c-no">📵</button>';
+    $('#c-no').onclick=function(){ sc.classList.add('hidden'); };
+    setTimeout(function(){ if(!sc.classList.contains('hidden')) callUI('on'); },1600);
+  }else if(stage==='on'){
+    title.textContent='通话中'; tm.classList.remove('hidden');
+    sub.textContent=pick(['들리니 I\'m callin\' you','Feel the beating of my heart','All I Have Is Love']);
+    callSec=0; tm.textContent='00:00';
+    callTimer=setInterval(function(){ callSec++;
+      tm.textContent=String(Math.floor(callSec/60)).padStart(2,'0')+':'+String(callSec%60).padStart(2,'0'); },1000);
+    ops.innerHTML='<button class="c-btn end" id="c-end">📵</button>';
+    $('#c-end').onclick=function(){ clearInterval(callTimer); sc.classList.add('hidden');
+      pushMsg('me','（通话结束 '+tm.textContent+'）'); renderChat(); };
+  }
+}
+
+/* SECTION: boot */
+function bind(){
+  $$('.tab-btn').forEach(function(b){ b.onclick=function(){ switchTab(b.dataset.tab); }; });
+  $('#btn-send').onclick=sendChat;
+  $('#chat-input').addEventListener('keydown',function(e){ if(e.key==='Enter') sendChat(); });
+  $('#btn-oshi-settings').onclick=oshiSettings;
+  $('#btn-diary-new').onclick=function(){ openDiary(null); };
+  $('#btn-envelope').onclick=drawEnvelope;
+  $('#btn-card-add').onclick=function(){ openCardEdit(null); };
+  $('#btn-card-fav').onclick=function(){ cardFavOnly=!cardFavOnly; renderCards(); };
+  $('#btn-gm-refresh').onclick=genToday;
+  $('#btn-gm-edit').onclick=editToday;
+  $('#btn-days-edit').onclick=editDays;
+  $('#btn-anni-add').onclick=addAnni;
+  $('#btn-export').onclick=exportData;
+  $('#btn-import').onclick=function(){ $('#import-file').click(); };
+  $('#import-file').onchange=function(){ if(this.files[0]) importData(this.files[0]); this.value=''; };
+  $('#btn-pass').onclick=passSettings;
+  $('#btn-reset').onclick=function(){
+    if(confirm('确定清空全部本地数据？将回到初始状态，不可恢复（除非你有导出备份）。')){
+      if(confirm('再确认一次：真的要清空吗？')){
+        MilkStore.wipe(); state=defaultState(); state.onboarded=false; save();
+        location.reload();
+      }
+    }
+  };
+  $('#btn-call').onclick=function(){ callUI('ring'); };
+  $('#btn-top-setting').onclick=oshiSettings;
+  $$('#panel-me .row-item[data-go]').forEach(function(r){
+    r.onclick=function(){
+      var g=r.dataset.go;
+      if(g==='settings') oshiSettings(); else if(g==='theme') openThemeEditor();
+      else if(g==='guide') openGuide(); else if(g==='about') openAbout();
+    };
+  });
+  $('#lock-go').onclick=tryUnlock;
+  $('#lock-input').addEventListener('keydown',function(e){ if(e.key==='Enter') tryUnlock(); });
+}
+function boot(){
+  MilkStore.init(function(data){
+    state=data?Object.assign(defaultState(),data):defaultState();
+    applyTheme(); applyIdentity(); bind();
+    if(!state.onboarded){ startOnboarding(); return; }
+    renderChat(); scrollChat();
+    if(state.pass) showLock();
+  });
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+})();
+
+</script>
+</body>
+</html>
